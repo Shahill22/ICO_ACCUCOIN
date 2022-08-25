@@ -40,7 +40,7 @@ contract ICO is Ownable {
         return finalSaleValue=_finalSaleValue;
     }
     //etherum price in dollars 
-    function getLatestPrice() public view returns (int) {
+    function getLatestPrice() public view returns (uint256) {
         (
             /*uint80 roundID*/,
             int price,
@@ -48,11 +48,11 @@ contract ICO is Ownable {
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
-        return price;
+        return uint256(price * 10000000000);
     }
     function weiAmount(uint256 _amount) public view returns(uint256){
-        int256 currentPrice=getLatestPrice();
-        return _amount * uint256(currentPrice);
+        uint256 currentPrice=getLatestPrice();
+        return (_amount * currentPrice)/1e18 ;
     }
     function purchaseToken(address _purchaser) payable public {
         require(msg.value > 0 && _purchaser != address(0)); 
