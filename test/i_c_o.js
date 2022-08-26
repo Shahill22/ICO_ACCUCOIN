@@ -19,18 +19,19 @@ contract("ICO", function ( accounts ) {
           const ownerBalance = await token.balanceOf(owner).toString();
           expect(await token.totalSupply().toString()).to.be.equal(ownerBalance);
       });
-    });
-    // send tokens to vesting contract and check balance
-    it("Should transfer tokens", async function () {
-      const transferAmount = new BN('10000');
-      const transfer = await token.transfer(address1, transferAmount, { from: owner });
+    
+    // send tokens to address and check balance
+      it("Should transfer tokens", async function () {
+        const transferAmount = new BN('10000');
+        const transfer = await token.transfer(address1, transferAmount, { from: owner });
 
-      expectEvent(transfer,'Transfer', {
-              from: owner,
-              to: address1,
-              value: transferAmount,
-          });
+        expectEvent(transfer,'Transfer', {
+                from: owner,
+                to: address1,
+                value: transferAmount,
+            });
 
-      assert.equal((await token.balanceOf(address1)).toString(), transferAmount.toString());
+        assert.equal((await token.balanceOf(address1)).toString(), transferAmount.toString());
+      });
     });
 });
