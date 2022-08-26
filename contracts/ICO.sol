@@ -61,7 +61,7 @@ contract ICO is Ownable {
         uint256 tokenbalance = token.balanceOf(address(this)) ;
         uint256 tokensForUser;
         if (currentStage==ICOStage.PreSale){
-            tokensForUser =(ethInUSD/preSaleValue)*1e18;
+            tokensForUser =(ethInUSD*1e18)/preSaleValue;
             require(tokensForUser + totalSale <= preSaleQuantity,"ICO: Insufficient PreSale tokens available " ); 
         }
         else if(currentStage==ICOStage.SeedSale){
@@ -70,7 +70,7 @@ contract ICO is Ownable {
         }
         else{
             require(finalSaleValue>0);
-            tokensForUser = (ethInUSD/finalSaleValue)*1e18;
+            tokensForUser = (ethInUSD*1e18)/finalSaleValue;
             require(tokensForUser + totalSale<=finalSaleQuantity,"ICO: Insufficient tokens available");
         }
         require(tokensForUser <= tokenbalance,"ICO: Tokens not available");

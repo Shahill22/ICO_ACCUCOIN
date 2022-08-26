@@ -32,7 +32,6 @@ contract("ACCUCoin", function (accounts) {
     });
     it("should transfer", async function () {
       let amnt=web3.utils.toWei('0.00000000002','ether')
-      console.log(amnt);
       await instance.transfer(accounts[1],amnt,{from:accounts[0]})
       let bal1 = await instance.balanceOf(accounts[1]);
       bal1=web3.utils.fromWei(bal1,'ether');
