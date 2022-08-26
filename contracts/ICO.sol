@@ -60,15 +60,15 @@ contract ICO is Ownable {
         uint256 tokenbalance = token.balanceOf(address(this)) ;
         uint256 tokento;
         if (currentStage==ICOStage.PreSale){
-            tokento = Amount/preSaleValue;
+            tokento =(Amount/preSaleValue)*1e18;
             require(tokento <= tokenbalance && tokento <= preSaleQuantity );
         }
         else if(currentStage==ICOStage.SeedSale){
-            tokento = Amount/seedSaleValue;
+            tokento = (Amount/seedSaleValue)*1e18;
             require(tokento <= tokenbalance && tokento<=seedSaleQuantity);
         }
         else{
-            tokento = Amount/finalSaleValue;
+            tokento = (Amount/finalSaleValue)*1e18;
             require(tokento <= tokenbalance && tokento<=finalSaleQuantity);
         }
         raisedAmount += Amount ; // Increment raised amount
