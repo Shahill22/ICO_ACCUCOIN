@@ -6,11 +6,11 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract ICO is Ownable {
     ACCUCoin public token;
     AggregatorV3Interface internal priceFeed;
-    uint256 public preSaleQuantity=3000000000*1e18;     //30 Million
-    uint256 public preSaleValue = 10000000000000000;    //0.01 dollar
-    uint256 public seedSaleQuantity=5000000000*1e18;    //50 Million
-    uint256 public seedSaleValue = 20000000000000000;   //0.02 dollar
-    uint256 public finalSaleQuantity=2000000000*1e18;    //20 Million
+    uint256 public preSaleQuantity=30000000*1e18;     //30 Million
+    uint256 public preSaleValue = 0.01 * 1e18;    //0.01 dollar
+    uint256 public seedSaleQuantity=50000000*1e18;    //50 Million
+    uint256 public seedSaleValue = 0.02 * 1e18;   //0.02 dollar
+    uint256 public finalSaleQuantity=20000000*1e18;    //20 Million
     uint256 public finalSaleValue;
     enum ICOStage{
         PreSale,
@@ -48,11 +48,11 @@ contract ICO is Ownable {
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
-        return uint256(price * 10000000000);
+        return uint256(price * 10000000000);//1e10 as usd has 8 decimals
     }
     function weiAmount(uint256 _amount) public view returns(uint256){
         uint256 currentPrice=getLatestPrice();
-        return (_amount * currentPrice)/1e18 ;
+        return (_amount * currentPrice) / 1e18 ;   //divide by 1e18 as ethamount and currentprice multipiled has 36 decimals
     }
     function purchaseToken(address _purchaser) payable public {
         require(msg.value > 0 && _purchaser != address(0)); 
@@ -61,15 +61,15 @@ contract ICO is Ownable {
         uint256 tokento;
         if (currentStage==ICOStage.PreSale){
             tokento = Amount/preSaleValue;
-            require(tokento<=preSaleQuantity && tokento <= tokenbalance);
+            require(tokento <= tokenbalance && tokento <= preSaleQuantity );
         }
         else if(currentStage==ICOStage.SeedSale){
             tokento = Amount/seedSaleValue;
-            require(tokento<=seedSaleQuantity && tokento <= tokenbalance);
+            require(tokento <= tokenbalance && tokento<=seedSaleQuantity);
         }
         else{
             tokento = Amount/finalSaleValue;
-            require(tokento<=finalSaleQuantity && tokento <= tokenbalance);
+            require(tokento <= tokenbalance && tokento<=finalSaleQuantity);
         }
         raisedAmount += Amount ; // Increment raised amount
         token.transfer(msg.sender,tokento); // Send tokens to buyer
