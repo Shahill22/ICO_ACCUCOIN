@@ -60,7 +60,6 @@ contract("ICO", function (accounts) {
     });
 
     describe('purchase tokens', function () {
-
       describe('should revert', function () {
 
         it('if called with 0 ethers', async function () {
