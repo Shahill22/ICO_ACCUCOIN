@@ -28,12 +28,12 @@ contract ICO is Ownable {
         treasury=_treasury;
         priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e );
     }
-    function switchStage() external onlyOwner {
-        if(totalSale>=preSaleQuantity && totalSale<80000000*1e18){
-            currentStage = ICOStage.SeedSale;
+    function switchStage(uint256 _totalSale) external onlyOwner returns(ICOStage _currentStage) {
+        if(_totalSale>=preSaleQuantity && totalSale<80000000*1e18){
+            return currentStage = ICOStage.SeedSale;
         }
-        else if (totalSale>=80000000*1e18){   
-            currentStage=ICOStage.FinalSale;
+        else if (_totalSale>=80000000*1e18){   
+            return currentStage=ICOStage.FinalSale;
         }
     }
     function setFinalSaleValue(uint256 _finalSaleValue) external onlyOwner returns(uint256){
