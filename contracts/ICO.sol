@@ -60,7 +60,7 @@ contract ICO is Ownable {
         onlyOwner
         returns (uint256)
     {
-        require(finalSaleValue > 0, "ICO:  Should be valid Price");
+        require(_finalSaleValue > 0, "ICO:  Should be valid Price");
         return finalSaleValue = _finalSaleValue;
     }
 

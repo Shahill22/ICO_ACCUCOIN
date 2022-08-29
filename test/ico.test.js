@@ -131,7 +131,7 @@ contract("ICO", function (accounts) {
           let newSaleValue = web3.utils.toWei("0.03");
           await ico.setFinalSaleValue(newSaleValue);
           expect(await ico.finalSaleValue()).to.be.bignumber.equal(
-            30000000000000000
+            newSaleValue
           );
         });
       });
