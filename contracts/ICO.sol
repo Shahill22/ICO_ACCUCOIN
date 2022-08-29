@@ -43,11 +43,12 @@ contract ICO is Ownable {
     }
 
     function switchStage() external onlyOwner returns (ICOStage) {
-        if (currentStage == ICOStage.PreSale && totalSale >= preSaleQuantity) {
+        if (currentStage == ICOStage.PreSale) {
+            // && totalSale >= preSaleQuantity) {
             currentStage = ICOStage.SeedSale;
         } else if (
-            currentStage == ICOStage.SeedSale &&
-            totalSale >= preSaleQuantity + seedSaleQuantity
+            currentStage == ICOStage.SeedSale //&&
+            //totalSale >= preSaleQuantity + seedSaleQuantity
         ) {
             currentStage = ICOStage.FinalSale;
         }
