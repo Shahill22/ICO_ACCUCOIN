@@ -95,23 +95,6 @@ contract("ICO", function (accounts) {
         );
       });
     });
-    describe("purchase tokens", function () {
-      describe("should revert", function () {
-        it("if called with 0 ethers", async function () {
-          await expectRevert(
-            ico.purchaseToken(beneficiary),
-            "ICO: Invalid amount or address"
-          );
-        });
-
-        it("if called with beneficiary as zero address", async function () {
-          await expectRevert(
-            ico.purchaseToken(ZERO_ADDRESS, { value: "100" }),
-            "ICO: Invalid amount or address"
-          );
-        });
-      });
-    });
     describe(" set final sale value", function () {
       describe("should revert", function () {
         it("if called with other participants", async function () {
@@ -132,6 +115,53 @@ contract("ICO", function (accounts) {
           await ico.setFinalSaleValue(newSaleValue);
           expect(await ico.finalSaleValue()).to.be.bignumber.equal(
             newSaleValue
+          );
+        });
+      });
+    });
+    describe("purchase tokens", function () {
+      describe("should revert", function () {
+        it("if called with 0 ethers", async function () {
+          await expectRevert(
+            ico.purchaseToken(beneficiary),
+            "ICO: Invalid amount or address"
+          );
+        });
+
+        it("if called with beneficiary as zero address", async function () {
+          await expectRevert(
+            ico.purchaseToken(ZERO_ADDRESS, { value: "100" }),
+            "ICO: Invalid amount or address"
+          );
+        });
+
+        it("if exceeds presale quantity", async function () {
+          await expectRevert(
+            ico.purchaseToken(beneficiary, {
+              value: "31000000000000000000000000",
+            }),
+            "ICO: Exceeded PreSale token allocation"
+          );
+        });
+        it("if exceeds seedsale quantity", async function () {
+          await ico.switchStage();
+          await expectRevert(
+            ico.purchaseToken(beneficiary, {
+              value: "51000000000000000000000000",
+            }),
+            "ICO: Exceeded SeedSale token allocation"
+          );
+        });
+        it("if exceeds totalsale quantity", async function () {
+          let newSaleValue = web3.utils.toWei("0.03");
+          await ico.switchStage();
+          await ico.switchStage();
+          await ico.setFinalSaleValue(newSaleValue);
+          await expectRevert(
+            ico.purchaseToken(beneficiary, {
+              value: "101000000000000000000000000",
+            }),
+            "ICO: Exceeded token allocation"
           );
         });
       });
