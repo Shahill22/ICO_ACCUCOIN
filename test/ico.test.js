@@ -109,13 +109,14 @@ contract("ICO", function (accounts) {
             "ICO:  Should be valid Price"
           );
         });
-
-        it("set final sale value ", async function () {
-          let newSaleValue = web3.utils.toWei("0.03");
-          await ico.setFinalSaleValue(newSaleValue);
-          expect(await ico.finalSaleValue()).to.be.bignumber.equal(
-            newSaleValue
-          );
+        describe("final sale value", function () {
+          it("set final sale value ", async function () {
+            let newSaleValue = web3.utils.toWei("0.03");
+            await ico.setFinalSaleValue(newSaleValue);
+            expect(await ico.finalSaleValue()).to.be.bignumber.equal(
+              newSaleValue
+            );
+          });
         });
       });
     });
@@ -137,7 +138,8 @@ contract("ICO", function (accounts) {
 
         it("if exceeds presale quantity", async function () {
           await expectRevert(
-            ico.purchaseToken(beneficiary, {
+            ico.purchaseToken(purchaser, {
+              from: purchaser,
               value: "31000000000000000000000000",
             }),
             "ICO: Exceeded PreSale token allocation"
@@ -146,7 +148,8 @@ contract("ICO", function (accounts) {
         it("if exceeds seedsale quantity", async function () {
           await ico.switchStage();
           await expectRevert(
-            ico.purchaseToken(beneficiary, {
+            ico.purchaseToken(purchaser, {
+              from: purchaser,
               value: "51000000000000000000000000",
             }),
             "ICO: Exceeded SeedSale token allocation"
@@ -158,11 +161,47 @@ contract("ICO", function (accounts) {
           await ico.switchStage();
           await ico.setFinalSaleValue(newSaleValue);
           await expectRevert(
-            ico.purchaseToken(beneficiary, {
+            ico.purchaseToken(purchaser, {
+              from: purchaser,
               value: "101000000000000000000000000",
             }),
             "ICO: Exceeded token allocation"
           );
+        });
+        describe("should receive tokens", function () {
+          it("if purchaser received tokens(presale)", async function () {
+            expect(
+              await ico
+                .purchaseToken(purchaser, {
+                  from: purchaser,
+                  value: "100",
+                })
+                .toString()
+            ).to.be.equal(await token.balanceOf(purchaser).toString());
+          });
+          it("if purchaser received tokens(seedsale)", async function () {
+            await ico.switchStage();
+            expect(
+              await ico
+                .purchaseToken(purchaser, {
+                  from: purchaser,
+                  value: "100",
+                })
+                .toString()
+            ).to.be.equal(await token.balanceOf(purchaser).toString());
+          });
+          it("if purchaser received tokens(finalsale)", async function () {
+            await ico.switchStage();
+            await ico.switchStage();
+            expect(
+              await ico
+                .purchaseToken(purchaser, {
+                  from: purchaser,
+                  value: "100",
+                })
+                .toString()
+            ).to.be.equal(await token.balanceOf(purchaser).toString());
+          });
         });
       });
     });
