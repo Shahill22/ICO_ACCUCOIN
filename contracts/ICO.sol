@@ -82,7 +82,7 @@ contract ICO is Ownable {
         return (_ethAmount * currentPrice) / 1e18; //divide by 1e18 as ethamount and currentprice multipiled has 36 decimals
     }
 
-    function purchaseToken(address _beneficiary) external payable {
+    function purchaseToken(address _beneficiary) public payable {
         require(
             msg.value > 0 && _beneficiary != address(0),
             "ICO: Invalid amount or address"
@@ -119,5 +119,13 @@ contract ICO is Ownable {
         (bool success, ) = treasury.call{value: msg.value}(""); // Send eth to treasury
         require(success, "ICO: ETH transfer failed");
         emit TokenPurchased(msg.sender, _beneficiary, tokensForUser, msg.value);
+    }
+
+    fallback() external payable {
+        purchaseToken(msg.sender);
+    }
+
+    receive() external payable {
+        purchaseToken(msg.sender);
     }
 }

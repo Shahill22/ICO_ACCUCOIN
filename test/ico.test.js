@@ -179,6 +179,7 @@ contract("ICO", function (accounts) {
                 .toString()
             ).to.be.equal(await token.balanceOf(purchaser).toString());
           });
+
           it("if purchaser received tokens(seedsale)", async function () {
             await ico.switchStage();
             expect(
