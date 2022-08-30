@@ -3,12 +3,7 @@ const {
   constants,
   expectEvent,
   expectRevert,
-  ether,
-  send,
-  balance,
-  time,
 } = require("@openzeppelin/test-helpers");
-const { assertion } = require("@openzeppelin/test-helpers/src/expectRevert");
 const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 const { expect } = require("chai");
 const { ZERO_ADDRESS } = constants;
@@ -55,13 +50,12 @@ contract("ICO", function (accounts) {
   });
 
   describe("create ICO", function () {
-    const preSaleQuantity = web3.utils.toWei("30000000");
-    const preSaleValue = web3.utils.toWei("0.01");
-    const seedSaleQuantity = web3.utils.toWei("50000000");
-    const seedSaleValue = web3.utils.toWei("0.02");
-    const finalSaleQuantity = web3.utils.toWei("20000000");
-
     it("initial states set properly", async function () {
+      const preSaleQuantity = web3.utils.toWei("30000000");
+      const preSaleValue = web3.utils.toWei("0.01");
+      const seedSaleQuantity = web3.utils.toWei("50000000");
+      const seedSaleValue = web3.utils.toWei("0.02");
+      const finalSaleQuantity = web3.utils.toWei("20000000");
       expect(await ico.owner()).to.be.equal(owner);
       expect(await ico.treasury()).to.be.equal(treasury);
       expect(await ico.preSaleQuantity()).to.be.bignumber.equal(
@@ -77,7 +71,7 @@ contract("ICO", function (accounts) {
       );
     });
 
-    describe("Switch stages", function () {
+    describe("switch stages", function () {
       it("test initial stage is presale", async function () {
         expect((await ico.currentStage()).toString()).to.equal(
           ICO.ICOStage.PreSale.toString()
@@ -142,30 +136,32 @@ contract("ICO", function (accounts) {
 
         it("if exceeds presale quantity", async function () {
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "31000000000000000000000000",
             }),
             "ICO: Exceeded PreSale token allocation"
           );
         });
+
         it("if exceeds seedsale quantity", async function () {
           await ico.switchStage();
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "51000000000000000000000000",
             }),
             "ICO: Exceeded SeedSale token allocation"
           );
         });
+
         it("if exceeds totalsale quantity", async function () {
           let newSaleValue = web3.utils.toWei("0.03");
           await ico.switchStage();
           await ico.switchStage();
           await ico.setFinalSaleValue(newSaleValue);
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "101000000000000000000000000",
             }),
@@ -220,9 +216,11 @@ contract("ICO", function (accounts) {
               .toString()
           ).to.be.equal(await token.balanceOf(purchaser).toString());
         });
+
         it("if purchaser received tokens(finalsale)", async function () {
           await ico.switchStage();
           await ico.switchStage();
+          await ico.setFinalSaleValue(web3.utils.toWei("0.03"));
           expect(
             await ico
               .purchaseToken(purchaser, {
@@ -231,14 +229,9 @@ contract("ICO", function (accounts) {
               })
               .toString()
           ).to.be.equal(await token.balanceOf(purchaser).toString());
-          console.log(await ico
-            .purchaseToken(purchaser, {
-              from: purchaser,
-              value: "100",
-            })
-            .toString())
-          console.log(await token.balanceOf(purchaser).toString())
         });
+
+        it("ether to contract directly", async function () { });
       });
     });
   });
