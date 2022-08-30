@@ -9,6 +9,7 @@ const {
   time,
 } = require("@openzeppelin/test-helpers");
 const { assertion } = require("@openzeppelin/test-helpers/src/expectRevert");
+const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 const { expect } = require("chai");
 const { ZERO_ADDRESS } = constants;
 
@@ -75,6 +76,7 @@ contract("ICO", function (accounts) {
         finalSaleQuantity
       );
     });
+
     describe("Switch stages", function () {
       it("test initial stage is presale", async function () {
         expect((await ico.currentStage()).toString()).to.equal(
@@ -95,7 +97,8 @@ contract("ICO", function (accounts) {
         );
       });
     });
-    describe(" set final sale value", function () {
+
+    describe("set final sale value", function () {
       describe("should revert", function () {
         it("if called with other participants", async function () {
           await expectRevert.unspecified(
@@ -109,17 +112,18 @@ contract("ICO", function (accounts) {
             "ICO:  Should be valid Price"
           );
         });
-        describe("final sale value", function () {
-          it("set final sale value ", async function () {
-            let newSaleValue = web3.utils.toWei("0.03");
-            await ico.setFinalSaleValue(newSaleValue);
-            expect(await ico.finalSaleValue()).to.be.bignumber.equal(
-              newSaleValue
-            );
-          });
+      });
+      describe("should set final sale value", function () {
+        it("set final sale value ", async function () {
+          let newSaleValue = web3.utils.toWei("0.03");
+          await ico.setFinalSaleValue(newSaleValue);
+          expect(await ico.finalSaleValue()).to.be.bignumber.equal(
+            newSaleValue
+          );
         });
       });
     });
+
     describe("purchase tokens", function () {
       describe("should revert", function () {
         it("if called with 0 ethers", async function () {
@@ -168,41 +172,72 @@ contract("ICO", function (accounts) {
             "ICO: Exceeded token allocation"
           );
         });
-        describe("should receive tokens", function () {
-          it("if purchaser received tokens(presale)", async function () {
-            expect(
-              await ico
-                .purchaseToken(purchaser, {
-                  from: purchaser,
-                  value: "100",
-                })
-                .toString()
-            ).to.be.equal(await token.balanceOf(purchaser).toString());
+      });
+      describe("should receive tokens", function () {
+        it("if beneficiary received tokens(presale)", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.preSaleValue();
+          const tokensExpected = ethInUSD.mul(web3.utils.toBN(1e18).div(tokenValue))
+
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(beneficiary);
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(await web3.eth.getBalance(treasury));
+          const totalSaleBeforePurchase = await ico.totalSale();
+          const raisedAmountBeforePurchase = await ico.raisedAmount();
+
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: purchaseEthValue,
+          })
+
+          expectEvent(purchaseReceipt, 'TokenPurchased', {
+            purchaser: purchaser,
+            beneficiary: beneficiary,
+            quantity: tokensExpected,
+            weiAmount: purchaseEthValue
           });
 
-          it("if purchaser received tokens(seedsale)", async function () {
-            await ico.switchStage();
-            expect(
-              await ico
-                .purchaseToken(purchaser, {
-                  from: purchaser,
-                  value: "100",
-                })
-                .toString()
-            ).to.be.equal(await token.balanceOf(purchaser).toString());
-          });
-          it("if purchaser received tokens(finalsale)", async function () {
-            await ico.switchStage();
-            await ico.switchStage();
-            expect(
-              await ico
-                .purchaseToken(purchaser, {
-                  from: purchaser,
-                  value: "100",
-                })
-                .toString()
-            ).to.be.equal(await token.balanceOf(purchaser).toString());
-          });
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(beneficiary);
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(await web3.eth.getBalance(treasury));
+          const totalSaleAfterPurchase = await ico.totalSale();
+          const raisedAmountAfterPurchase = await ico.raisedAmount();
+
+          expect(beneficiaryTokenBalanceAfterPurchase.sub(beneficiaryTokenBalanceBeforePurchase)).to.bignumber.equal(tokensExpected)
+          expect(treasuryEthBalanceAfterPurchase.sub(treasuryEthBalanceBeforePurchase)).to.bignumber.equal(purchaseEthValue)
+          expect(totalSaleAfterPurchase.sub(totalSaleBeforePurchase)).to.bignumber.equal(tokensExpected)
+          expect(raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)).to.bignumber.equal(purchaseEthValue)
+
+        });
+
+        it("if purchaser received tokens(seedsale)", async function () {
+          await ico.switchStage();
+          expect(
+            await ico
+              .purchaseToken(purchaser, {
+                from: purchaser,
+                value: "100",
+              })
+              .toString()
+          ).to.be.equal(await token.balanceOf(purchaser).toString());
+        });
+        it("if purchaser received tokens(finalsale)", async function () {
+          await ico.switchStage();
+          await ico.switchStage();
+          expect(
+            await ico
+              .purchaseToken(purchaser, {
+                from: purchaser,
+                value: "100",
+              })
+              .toString()
+          ).to.be.equal(await token.balanceOf(purchaser).toString());
+          console.log(await ico
+            .purchaseToken(purchaser, {
+              from: purchaser,
+              value: "100",
+            })
+            .toString())
+          console.log(await token.balanceOf(purchaser).toString())
         });
       });
     });
