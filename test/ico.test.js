@@ -138,7 +138,7 @@ contract("ICO", function (accounts) {
 
         it("if exceeds presale quantity", async function () {
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "31000000000000000000000000",
             }),
@@ -148,7 +148,7 @@ contract("ICO", function (accounts) {
         it("if exceeds seedsale quantity", async function () {
           await ico.switchStage();
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "51000000000000000000000000",
             }),
@@ -161,7 +161,7 @@ contract("ICO", function (accounts) {
           await ico.switchStage();
           await ico.setFinalSaleValue(newSaleValue);
           await expectRevert(
-            ico.purchaseToken(purchaser, {
+            ico.purchaseToken(beneficiary, {
               from: purchaser,
               value: "101000000000000000000000000",
             }),
@@ -172,7 +172,7 @@ contract("ICO", function (accounts) {
           it("if purchaser received tokens(presale)", async function () {
             expect(
               await ico
-                .purchaseToken(purchaser, {
+                .purchaseToken(beneficiary, {
                   from: purchaser,
                   value: "100",
                 })
@@ -184,7 +184,7 @@ contract("ICO", function (accounts) {
             await ico.switchStage();
             expect(
               await ico
-                .purchaseToken(purchaser, {
+                .purchaseToken(beneficiary, {
                   from: purchaser,
                   value: "100",
                 })
@@ -196,13 +196,14 @@ contract("ICO", function (accounts) {
             await ico.switchStage();
             expect(
               await ico
-                .purchaseToken(purchaser, {
+                .purchaseToken(beneficiary, {
                   from: purchaser,
                   value: "100",
                 })
                 .toString()
             ).to.be.equal(await token.balanceOf(purchaser).toString());
           });
+          it("ether to contract directly", async function () {});
         });
       });
     });
