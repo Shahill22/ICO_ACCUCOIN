@@ -169,69 +169,310 @@ contract("ICO", function (accounts) {
           );
         });
       });
+
       describe("should receive tokens", function () {
+        it("if purchaser received tokens", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.preSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(
+            beneficiary
+          );
+
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: purchaseEthValue,
+          });
+
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(
+            beneficiary
+          );
+
+          expect(
+            beneficiaryTokenBalanceAfterPurchase.sub(
+              beneficiaryTokenBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(tokensExpected);
+          expect(beneficiaryTokenBalanceAfterPurchase).to.be.not.equal(
+            beneficiaryTokenBalanceBeforePurchase
+          );
+        });
         it("if beneficiary received tokens(presale)", async function () {
           const purchaseEthValue = web3.utils.toBN(100);
           const ethInUSD = await ico.ethToUSD(purchaseEthValue);
           const tokenValue = await ico.preSaleValue();
-          const tokensExpected = ethInUSD.mul(web3.utils.toBN(1e18).div(tokenValue))
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
 
-          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(beneficiary);
-          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(await web3.eth.getBalance(treasury));
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
           const totalSaleBeforePurchase = await ico.totalSale();
           const raisedAmountBeforePurchase = await ico.raisedAmount();
 
           const purchaseReceipt = await ico.purchaseToken(beneficiary, {
             from: purchaser,
             value: purchaseEthValue,
-          })
+          });
 
-          expectEvent(purchaseReceipt, 'TokenPurchased', {
+          expectEvent(purchaseReceipt, "TokenPurchased", {
             purchaser: purchaser,
             beneficiary: beneficiary,
             quantity: tokensExpected,
-            weiAmount: purchaseEthValue
+            weiAmount: purchaseEthValue,
           });
 
-          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(beneficiary);
-          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(await web3.eth.getBalance(treasury));
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
           const totalSaleAfterPurchase = await ico.totalSale();
           const raisedAmountAfterPurchase = await ico.raisedAmount();
 
-          expect(beneficiaryTokenBalanceAfterPurchase.sub(beneficiaryTokenBalanceBeforePurchase)).to.bignumber.equal(tokensExpected)
-          expect(treasuryEthBalanceAfterPurchase.sub(treasuryEthBalanceBeforePurchase)).to.bignumber.equal(purchaseEthValue)
-          expect(totalSaleAfterPurchase.sub(totalSaleBeforePurchase)).to.bignumber.equal(tokensExpected)
-          expect(raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)).to.bignumber.equal(purchaseEthValue)
-
+          expect(
+            beneficiaryTokenBalanceAfterPurchase.sub(
+              beneficiaryTokenBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            treasuryEthBalanceAfterPurchase.sub(
+              treasuryEthBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(purchaseEthValue);
+          expect(
+            totalSaleAfterPurchase.sub(totalSaleBeforePurchase)
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)
+          ).to.bignumber.equal(purchaseEthValue);
         });
 
         it("if purchaser received tokens(seedsale)", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.seedSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleBeforePurchase = await ico.totalSale();
+          const raisedAmountBeforePurchase = await ico.raisedAmount();
           await ico.switchStage();
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: purchaseEthValue,
+          });
+
+          expectEvent(purchaseReceipt, "TokenPurchased", {
+            purchaser: purchaser,
+            beneficiary: beneficiary,
+            quantity: tokensExpected,
+            weiAmount: purchaseEthValue,
+          });
+
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleAfterPurchase = await ico.totalSale();
+          const raisedAmountAfterPurchase = await ico.raisedAmount();
+
           expect(
-            await ico
-              .purchaseToken(purchaser, {
-                from: purchaser,
-                value: "100",
-              })
-              .toString()
-          ).to.be.equal(await token.balanceOf(purchaser).toString());
+            beneficiaryTokenBalanceAfterPurchase.sub(
+              beneficiaryTokenBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            treasuryEthBalanceAfterPurchase.sub(
+              treasuryEthBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(purchaseEthValue);
+          expect(
+            totalSaleAfterPurchase.sub(totalSaleBeforePurchase)
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)
+          ).to.bignumber.equal(purchaseEthValue);
         });
 
         it("if purchaser received tokens(finalsale)", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          let newSaleValue = web3.utils.toWei("0.03");
           await ico.switchStage();
           await ico.switchStage();
-          await ico.setFinalSaleValue(web3.utils.toWei("0.03"));
+          await ico.setFinalSaleValue(newSaleValue);
+          const tokenValue = await ico.finalSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleBeforePurchase = await ico.totalSale();
+          const raisedAmountBeforePurchase = await ico.raisedAmount();
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: purchaseEthValue,
+          });
+
+          expectEvent(purchaseReceipt, "TokenPurchased", {
+            purchaser: purchaser,
+            beneficiary: beneficiary,
+            quantity: tokensExpected,
+            weiAmount: purchaseEthValue,
+          });
+
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(
+            beneficiary
+          );
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleAfterPurchase = await ico.totalSale();
+          const raisedAmountAfterPurchase = await ico.raisedAmount();
+
           expect(
-            await ico
-              .purchaseToken(purchaser, {
-                from: purchaser,
-                value: "100",
-              })
-              .toString()
-          ).to.be.equal(await token.balanceOf(purchaser).toString());
+            beneficiaryTokenBalanceAfterPurchase.sub(
+              beneficiaryTokenBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            treasuryEthBalanceAfterPurchase.sub(
+              treasuryEthBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(purchaseEthValue);
+          expect(
+            totalSaleAfterPurchase.sub(totalSaleBeforePurchase)
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)
+          ).to.bignumber.equal(purchaseEthValue);
+        });
+        it("if treasurer received ether", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.preSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: purchaseEthValue,
+          });
+
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+
+          expect(
+            treasuryEthBalanceAfterPurchase.sub(
+              treasuryEthBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(purchaseEthValue);
+        });
+        it("emitting event after token purchase", async function () {
+          const purchaseReceipt = await ico.purchaseToken(beneficiary, {
+            from: purchaser,
+            value: "100",
+          });
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.preSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+
+          expectEvent(purchaseReceipt, "TokenPurchased", {
+            purchaser: purchaser,
+            beneficiary: beneficiary,
+            quantity: tokensExpected,
+            weiAmount: purchaseEthValue,
+          });
         });
 
-        it("ether to contract directly", async function () { });
+        it("ether to contract directly", async function () {
+          const purchaseEthValue = web3.utils.toBN(100);
+          const ethInUSD = await ico.ethToUSD(purchaseEthValue);
+          const tokenValue = await ico.preSaleValue();
+          const tokensExpected = ethInUSD.mul(
+            web3.utils.toBN(1e18).div(tokenValue)
+          );
+
+          const beneficiaryTokenBalanceBeforePurchase = await token.balanceOf(
+            purchaser
+          );
+          const treasuryEthBalanceBeforePurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleBeforePurchase = await ico.totalSale();
+          const raisedAmountBeforePurchase = await ico.raisedAmount();
+
+          const { transactionHash } = await web3.eth.sendTransaction({
+            from: purchaser,
+            to: ico.address,
+            value: purchaseEthValue,
+            gasLimit: 200000,
+          });
+
+          expectEvent.inTransaction(transactionHash, ico, "TokenPurchased", {
+            purchaser: purchaser,
+            beneficiary: purchaser,
+            quantity: tokensExpected,
+            weiAmount: purchaseEthValue,
+          });
+
+          const beneficiaryTokenBalanceAfterPurchase = await token.balanceOf(
+            purchaser
+          );
+          const treasuryEthBalanceAfterPurchase = web3.utils.toBN(
+            await web3.eth.getBalance(treasury)
+          );
+          const totalSaleAfterPurchase = await ico.totalSale();
+          const raisedAmountAfterPurchase = await ico.raisedAmount();
+
+          expect(
+            beneficiaryTokenBalanceAfterPurchase.sub(
+              beneficiaryTokenBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            treasuryEthBalanceAfterPurchase.sub(
+              treasuryEthBalanceBeforePurchase
+            )
+          ).to.bignumber.equal(purchaseEthValue);
+          expect(
+            totalSaleAfterPurchase.sub(totalSaleBeforePurchase)
+          ).to.bignumber.equal(tokensExpected);
+          expect(
+            raisedAmountAfterPurchase.sub(raisedAmountBeforePurchase)
+          ).to.bignumber.equal(purchaseEthValue);
+        });
       });
     });
   });
